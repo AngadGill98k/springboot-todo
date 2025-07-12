@@ -1,6 +1,10 @@
 package angad.todo.models;
 
+import org.springframework.data.annotation.Id;
+import java.util.UUID;
 public class todos {
+    @Id
+    private String  id = UUID.randomUUID().toString();
     private String name;
     private boolean status;
 

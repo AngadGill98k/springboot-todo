@@ -2,58 +2,92 @@ import React, { useState } from 'react';
 import './login.css';
 import { useNavigate } from 'react-router-dom';
 
-
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
-  const navigate = useNavigate();
-
-  const [form, setForm] = useState({
-    username: '',
-    mail: '',
-    password: ''
-  });
+  const [form, setForm] = useState({ username: '', mail: '', password: '' });
   const [errorMsg, setErrorMsg] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setErrorMsg('');
   };
 
-  const handleSubmit = () => {
-    const url = isSignup ? 'http://localhost:8080/signup' : 'http://localhost:8080/signin';
+  const validateForm = () => {
     const { username, mail, password } = form;
 
     if (!username.trim() || !mail.trim() || !password.trim()) {
       setErrorMsg('All fields are required.');
-      return;
+      return false;
     }
 
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(mail)) {
       setErrorMsg('Please enter a valid email address.');
-      return;
+      return false;
     }
 
-    fetch(url, {
+    return true;
+  };
+
+  const handleSignup = () => {
+    fetch('http://localhost:8080/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ name:username, mail, pass:password })
+      body: JSON.stringify({
+        name: form.username,
+        mail: form.mail,
+        pass: form.password
+      })
     })
       .then(res => res.json())
       .then(data => {
-       navigate('/main');
+        if (data.msg === 'Signed up successfully') {
+          
+        } else {
+          setErrorMsg(data.msg || 'Signup failed.');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        setErrorMsg('Signup error occurred.');
+      });
+  };
+
+  const handleSignin = () => {
+    fetch('http://localhost:8080/signin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        name: form.username,
+        mail: form.mail,
+        pass: form.password
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
         if (data.msg === 'Logged in successfully') {
-           console.log(data.msg);
-            
+          navigate('/main');
         } else {
           setErrorMsg(data.msg || 'Login failed. Please check your credentials.');
         }
       })
       .catch(err => {
         console.error(err);
-        setErrorMsg('Wrong Credentials');
+        setErrorMsg('Login error occurred.');
       });
+  };
+
+  const handleSubmit = () => {
+    if (!validateForm()) return;
+
+    if (isSignup) {
+      handleSignup();
+    } else {
+      handleSignin();
+    }
   };
 
   return (

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
@@ -8,7 +9,7 @@ function App() {
   const fetchTodos = () => {
     fetch('http://localhost:8080/main/gettodos', {
       method: 'GET',
-      credentials: 'include',
+      credentials: 'include', // make sure cookies (token) go with the request
     })
       .then(res => res.json())
       .then(data => {
@@ -19,7 +20,7 @@ function App() {
       .catch(err => console.error('Error fetching todos:', err));
   };
 
-  const handleAdd = () => {
+  const handleclick = () => {
     if (!input.trim()) return;
 
     const name = {
@@ -31,38 +32,20 @@ function App() {
       method: 'POST',
       credentials: 'include',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify(name),
+      body: JSON.stringify(name)
     })
       .then(res => res.json())
-      .then(() => {
+      .then(data => {
+        console.log(data);
         setInput('');
-        fetchTodos();
+        fetchTodos(); // ✅ refresh todos after adding
       })
       .catch(err => console.error(err));
   };
 
-  const handleDone = (id) => {
-    fetch(`http://localhost:8080/main/markdone/${id}`, {
-      method: 'PUT',
-      credentials: 'include',
-    })
-      .then(res => res.json())
-      .then(() => fetchTodos())
-      .catch(err => console.error('Error marking done:', err));
-  };
-
-  const handleDelete = (id) => {
-    fetch(`http://localhost:8080/main/delete/${id}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    })
-      .then(res => res.json())
-      .then(() => fetchTodos())
-      .catch(err => console.error('Error deleting:', err));
-  };
-
+  // ✅ Fetch todos when component mounts
   useEffect(() => {
     fetchTodos();
   }, []);
@@ -70,19 +53,18 @@ function App() {
   return (
     <>
       <input
-        type="text"
+        type='text'
+        id='todo'
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={e => setInput(e.target.value)}
         placeholder="Add todo"
       />
-      <button onClick={handleAdd}>Add</button>
+      <button onClick={handleclick}>Add</button>
 
       <ul>
-        {todos.map((todo) => (
-          <li key={todo._id}>
+        {todos.map((todo, index) => (
+          <li key={index}>
             <span>{todo.name}</span> - <span>{todo.status ? '✅ Done' : '❌ Pending'}</span>
-            {!todo.status && <button onClick={() => handleDone(todo._id)}>Mark Done</button>}
-            <button onClick={() => handleDelete(todo._id)}>Delete</button>
           </li>
         ))}
       </ul>
