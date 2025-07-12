@@ -1,6 +1,10 @@
 package angad.todo.models;
 
+import org.springframework.data.annotation.Id;
+
 public class todos {
+    @Id
+    private String id;
     private String name;
     private boolean status;
 
