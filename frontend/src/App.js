@@ -69,27 +69,31 @@ function App() {
   }, []);
 
   return (
-    <>
-      <input
-        type='text'
-        id='todo'
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        placeholder="Add todo"
-      />
-      <button onClick={handleAdd}>Add</button>
+  <div className="app-container">
+    <h2>📝 Todo App</h2>
+    <input
+      type='text'
+      id='todo'
+      value={input}
+      onChange={e => setInput(e.target.value)}
+      placeholder="Add todo"
+    />
+    <button onClick={handleAdd}>Add</button>
 
-      <ul>
-        {todos.map((todo) => (
-          <li id={todo.id}>
-            <span>{todo.name}</span> - <span>{todo.status ? '✅ Done' : '❌ Pending'}</span>
+    <ul>
+      {todos.map((todo) => (
+        <li key={todo.id}>
+          <span>{todo.name}</span> - <span>{todo.status ? '✅ Done' : '❌ Pending'}</span>
+          <div>
             <button onClick={() => handleToggleDone(todo.id)}>Toggle Done</button>
             <button onClick={() => handleDelete(todo.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-    </>
-  );
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
 }
 
 export default App;
