@@ -71,4 +71,70 @@ public class todo{
         return res;
     }
 
+    @DeleteMapping ("/delete/{id}")
+    public Map<String,Object> delete ( @PathVariable String id,@CookieValue(value = "token", required = false) String token){
+        Map<String,Object> res=new HashMap<>();;
+        if (token == null || !jwtutil.validateToken(token)) {
+            res.put("msg", "Unauthorized: token missing or invalid");
+            return res;
+        }
+        String email = jwtutil.extractmail(token);
+        User user = repo.findByMail(email); // you'll need userrepo injected
+        if (user == null) {
+            res.put("msg", "User not found");
+            return res;
+        }
+        boolean removed = user.getTodos().removeIf(todo -> todo.getId().equals(id));
+
+        if (removed) {
+            repo.save(user);
+            res.put("msg", "Todo deleted");
+        } else {
+            res.put("msg", "Todo not found");
+        }
+
+        return res;
+    }
+    @PutMapping("/toggle/{id}")
+    public Map<String, Object> toggleDone(@PathVariable String id,
+                                          @CookieValue(value = "token", required = false) String token) {
+        Map<String, Object> res = new HashMap<>();
+
+        // 1. Check token validity
+        if (token == null || !jwtutil.validateToken(token)) {
+            res.put("msg", "Unauthorized: token missing or invalid");
+            return res;
+        }
+
+        // 2. Get user by email from token
+        String email = jwtutil.extractmail(token);
+        User user = repo.findByMail(email);
+
+        if (user == null) {
+            res.put("msg", "User not found");
+            return res;
+        }
+
+        // 3. Find todo and toggle status
+        List<todos> todosList = user.getTodos();
+        boolean updated = false;
+
+        for (todos todo : todosList) {
+            if (todo.getId().equals(id)) {
+                todo.setStatus(!todo.isStatus()); // ✅ toggle
+                updated = true;
+                break;
+            }
+        }
+
+        // 4. Save if toggled
+        if (updated) {
+            repo.save(user);
+            res.put("msg", "Todo status toggled");
+        } else {
+            res.put("msg", "Todo not found");
+        }
+
+        return res;
+    }
 }
