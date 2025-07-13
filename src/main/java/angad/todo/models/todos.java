@@ -23,4 +23,8 @@ public class todos {
     public boolean isStatus() {
         return status;
     }
+
+    public String getId() {
+        return this.id;
+    }
 }

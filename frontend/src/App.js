@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
@@ -9,18 +8,19 @@ function App() {
   const fetchTodos = () => {
     fetch('http://localhost:8080/main/gettodos', {
       method: 'GET',
-      credentials: 'include', // make sure cookies (token) go with the request
+      credentials: 'include',
     })
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data.todos)) {
+          console.log(data.todos)
           setTodos(data.todos);
         }
       })
       .catch(err => console.error('Error fetching todos:', err));
   };
 
-  const handleclick = () => {
+  const handleAdd = () => {
     if (!input.trim()) return;
 
     const name = {
@@ -37,15 +37,33 @@ function App() {
       body: JSON.stringify(name)
     })
       .then(res => res.json())
-      .then(data => {
-        console.log(data);
+      .then(() => {
         setInput('');
-        fetchTodos(); // ✅ refresh todos after adding
+        fetchTodos();
       })
       .catch(err => console.error(err));
   };
 
-  // ✅ Fetch todos when component mounts
+  const handleDelete = (id) => {
+    fetch(`http://localhost:8080/main/delete/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+      .then(res => res.json())
+      .then(() => fetchTodos())
+      .catch(err => console.error('Delete failed:', err));
+  };
+
+  const handleToggleDone = (id) => {
+    fetch(`http://localhost:8080/main/toggle/${id}`, {
+      method: 'PUT',
+      credentials: 'include',
+    })
+      .then(res => res.json())
+      .then(() => fetchTodos())
+      .catch(err => console.error('Toggle failed:', err));
+  };
+
   useEffect(() => {
     fetchTodos();
   }, []);
@@ -59,12 +77,14 @@ function App() {
         onChange={e => setInput(e.target.value)}
         placeholder="Add todo"
       />
-      <button onClick={handleclick}>Add</button>
+      <button onClick={handleAdd}>Add</button>
 
       <ul>
-        {todos.map((todo, index) => (
-          <li key={index}>
+        {todos.map((todo) => (
+          <li id={todo.id}>
             <span>{todo.name}</span> - <span>{todo.status ? '✅ Done' : '❌ Pending'}</span>
+            <button onClick={() => handleToggleDone(todo.id)}>Toggle Done</button>
+            <button onClick={() => handleDelete(todo.id)}>Delete</button>
           </li>
         ))}
       </ul>
